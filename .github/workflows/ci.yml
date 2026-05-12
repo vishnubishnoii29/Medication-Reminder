@@ -1,0 +1,68 @@
+name: CI
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  build-and-smoke:
+    runs-on: ubuntu-latest
+    services:
+      mongodb:
+        image: mongo:6.0
+        ports: ['27017:27017']
+        options: >-
+          --health-cmd "mongosh --eval 'db.adminCommand(\"ping\")'" --health-interval=10s --health-timeout=5s --health-retries=5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install frontend deps
+        run: npm install
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'
+
+      - name: Install ai_service requirements
+        run: pip install -r ai_service/requirements.txt
+
+      - name: Start ai_service
+        run: |
+          python ai_service/app.py &
+          sleep 3
+
+      - name: Smoke test ai_service
+        run: |
+          curl --retry 5 --retry-delay 2 --fail -X POST http://localhost:5001/api/predict -H "Content-Type: application/json" -d '{"past_adherence_rates":[0.9,0.8]}'
+
+      - name: Install server deps
+        run: |
+          cd server
+          npm install
+
+      - name: Start server
+        env:
+          MONGO_URI: mongodb://localhost:27017/medimind
+          CLIENT_URL: http://localhost:3000
+          PYTHON_AI_URL: http://localhost:5001
+          JWT_SECRET: testsecret
+          PORT: 5000
+        run: |
+          node server/index.js &
+          sleep 4
+
+      - name: Smoke test server
+        run: |
+          curl --retry 5 --retry-delay 2 --fail http://localhost:5000/api/v1/analytics

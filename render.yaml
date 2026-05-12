@@ -1,0 +1,35 @@
+services:
+  - type: web
+    name: medimind-server
+    env: node
+    plan: free
+    buildCommand: |
+      cd server
+      npm install
+    startCommand: |
+      cd server
+      node index.js
+    envVars:
+      - key: MONGO_URI
+        value: REPLACE_ME
+      - key: JWT_SECRET
+        value: REPLACE_ME
+      - key: PYTHON_AI_URL
+        value: https://medimind-ai.onrender.com
+      - key: CLIENT_URL
+        value: https://your-app.vercel.app
+
+
+  - type: web
+    name: medimind-ai
+    env: python
+    plan: free
+    buildCommand: |
+      cd ai_service
+      pip install -r requirements.txt
+    startCommand: |
+      cd ai_service
+      gunicorn app:app --bind 0.0.0.0:$PORT
+    envVars:
+      - key: PORT
+        value: 5001
