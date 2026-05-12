@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from 'react';
+
 import { 
-  Brain, Pill, Activity, Clock, MessageSquare, BarChart2, 
-  Settings, LogOut, Menu, X, Bell, Moon, Sun, Search,
+  Pill, Activity, Clock, MessageSquare, BarChart2, 
+  Settings, LogOut, Menu, Bell, Moon, Sun, Search,
   Plus, MessageCircle, ChevronRight
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -10,6 +10,13 @@ import { io } from 'socket.io-client';
 import Logo from './Logo';
 import axios from 'axios';
 import { API_BASE } from '../config/api';
+
+const faqs = [
+  { title: 'How to add a medicine?', link: '/medicines' },
+  { title: 'How to enable dark mode?', link: '/settings' },
+  { title: 'What is adherence rate?', link: '/analytics' },
+  { title: 'How to use chatbot?', link: '/chatbot' }
+];
 
 const Layout = ({ children }) => {
   const [sidebarOpen, setSidebarOpen] = useState(() => {
@@ -21,7 +28,14 @@ const Layout = ({ children }) => {
   const [darkMode, setDarkMode] = useState(() => {
     return localStorage.getItem('darkMode') === 'true';
   });
-  const [user, setUser] = useState({ name: 'User' });
+  const [user] = useState(() => {
+    const saved = localStorage.getItem('user');
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.name) return parsed;
+    }
+    return { name: 'User' };
+  });
   const [profileMenuOpen, setProfileMenuOpen] = useState(false);
   const [notificationsOpen, setNotificationsOpen] = useState(false);
   const [notifications, setNotifications] = useState(() => {
@@ -33,12 +47,7 @@ const Layout = ({ children }) => {
   const [searchResults, setSearchResults] = useState([]);
   const [medicines, setMedicines] = useState([]);
 
-  const faqs = [
-    { title: 'How to add a medicine?', link: '/medicines' },
-    { title: 'How to enable dark mode?', link: '/settings' },
-    { title: 'What is adherence rate?', link: '/analytics' },
-    { title: 'How to use chatbot?', link: '/chatbot' }
-  ];
+
 
   const navigate = useNavigate();
   const location = useLocation();
@@ -122,6 +131,7 @@ const Layout = ({ children }) => {
 
   useEffect(() => {
     if (!searchQuery.trim()) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setSearchResults([]);
       return;
     }
@@ -155,10 +165,7 @@ const Layout = ({ children }) => {
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
-  useEffect(() => {
-    const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
-    if (savedUser.name) setUser(savedUser);
-  }, []);
+
 
   useEffect(() => {
     if (darkMode) {

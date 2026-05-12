@@ -1,8 +1,7 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+
 import { 
   ShieldCheck, Users, Activity, Brain, Server, AlertCircle, 
-  Search, Filter, ChevronRight, BarChart2, CheckCircle, Info
+  CheckCircle, Info
 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 

@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
       success: true,
       data: aiResponse.data
     });
-  } catch (err) {
+  } catch {
     // Fallback if AI service is down
     res.status(200).json({
       success: true,
@@ -51,7 +51,7 @@ router.post('/predict', async (req, res) => {
       success: true,
       data: aiResponse.data.prediction
     });
-  } catch (err) {
+  } catch {
     res.status(200).json({
       success: true,
       data: {

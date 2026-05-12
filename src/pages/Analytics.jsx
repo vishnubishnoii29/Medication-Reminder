@@ -1,12 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+
 import { 
-  BarChart2, Brain, TrendingUp, AlertTriangle, CheckCircle, 
-  Clock, Calendar, Info, Activity, Shield, Heart, Zap
+  Brain, CheckCircle, Clock, Activity, Shield, Zap
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
-  ResponsiveContainer, PieChart, Pie, Cell 
+  ResponsiveContainer
 } from 'recharts';
 import axios from 'axios';
 import { API_BASE } from '../config/api';
@@ -14,15 +13,12 @@ import { API_BASE } from '../config/api';
 const Analytics = () => {
   const [data, setData] = useState(null);
   const [prediction, setPrediction] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-
 
   useEffect(() => {
     const fetchData = async () => {
       // Bug #22 fix: read token inside the effect so it's always fresh
       const token = localStorage.getItem('token');
-      setLoading(true);
+
       try {
         const [analyticsRes, predictRes] = await Promise.all([
           axios.get(`${API_BASE}/api/v1/analytics`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -30,8 +26,8 @@ const Analytics = () => {
         ]);
         setData(analyticsRes.data.data);
         setPrediction(predictRes.data.data.prediction);
-      } catch (err) {
-        setError('Failed to fetch analytics data');
+      } catch {
+
         // Fallback data
         setData({
           adherence_rate: 85.0,
@@ -53,8 +49,6 @@ const Analytics = () => {
           confidence: 0.75,
           recommendation: "Maintain your current schedule."
         });
-      } finally {
-        setLoading(false);
       }
     };
 

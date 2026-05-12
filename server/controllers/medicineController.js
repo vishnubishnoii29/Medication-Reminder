@@ -2,7 +2,7 @@ const Medicine = require('../models/Medicine');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
-exports.createMedicine = catchAsync(async (req, res, next) => {
+exports.createMedicine = catchAsync(async (req, res) => {
   req.body.user = req.user.id;
   
   const newMedicine = await Medicine.create(req.body);
@@ -13,7 +13,7 @@ exports.createMedicine = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAllMedicines = catchAsync(async (req, res, next) => {
+exports.getAllMedicines = catchAsync(async (req, res) => {
   // Advanced filtering can be added here
   const queryObj = { ...req.query };
   const excludedFields = ['page', 'sort', 'limit', 'fields'];

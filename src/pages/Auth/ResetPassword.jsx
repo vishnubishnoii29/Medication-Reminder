@@ -1,7 +1,7 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Lock, Eye, EyeOff, ArrowRight, AlertCircle, CheckCircle } from 'lucide-react';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 import { API_BASE } from '../../config/api';
 import Logo from '../../components/Logo';
@@ -29,7 +29,7 @@ const ResetPassword = () => {
     }
     
     try {
-      const res = await axios.patch(`${API_BASE}/api/v1/auth/resetpassword/${token}`, { password });
+      await axios.patch(`${API_BASE}/api/v1/auth/resetpassword/${token}`, { password });
       setSuccess('Password reset successful! Redirecting to login...');
       setTimeout(() => navigate('/login'), 2000);
     } catch (err) {

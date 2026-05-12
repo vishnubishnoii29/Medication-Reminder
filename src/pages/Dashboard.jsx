@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
-import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+
 import { 
-  Brain, Pill, Activity, Clock, BarChart2, 
-  CheckCircle, TrendingUp, AlertTriangle, MoreVertical
+  Brain, Pill, Activity, Clock, 
+  CheckCircle, AlertTriangle, MoreVertical
 } from 'lucide-react';
 import { 
   AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, 
@@ -34,7 +34,7 @@ const Dashboard = () => {
     const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
     return savedUser.name ? savedUser : { name: 'User' };
   });
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [medicines, setMedicines] = useState([]);
   const [stats, setStats] = useState(null);
   const [prediction, setPrediction] = useState(null);
@@ -47,52 +47,53 @@ const Dashboard = () => {
     return 'Good Evening';
   };
 
-  const fetchData = useCallback(async () => {
-    setLoading(true);
-    const token = localStorage.getItem('token');
-    const savedUser = JSON.parse(localStorage.getItem('user') || '{}');
-    if (savedUser.name) setUser(savedUser);
-
-    try {
-      // 1. Fetch User Profile
-      const userRes = await axios.get(`${API_BASE}/api/v1/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (userRes.data.status === 'success') setUser(userRes.data.data);
-
-      // 2. Fetch Medicines
-      const medsRes = await axios.get(`${API_BASE}/api/v1/medicines`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (medsRes.data.status === 'success') setMedicines(medsRes.data.data);
-
-      // 3. Fetch Stats
-      const statsRes = await axios.get(`${API_BASE}/api/v1/analytics`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (statsRes.data.status === 'success') setStats(statsRes.data.data);
-
-      // 4. Fetch Prediction
-      const predictRes = await axios.post(`${API_BASE}/api/v1/analytics/predict`, {}, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (predictRes.data.status === 'success') setPrediction(predictRes.data.data.prediction);
-
-    } catch (err) {
-      console.error('Failed to fetch dashboard data:', err);
-      // Fallback to mock medicines if fetch fails
-      setMedicines([
-        { _id: '1', name: 'Vitamin D3', dosage: '2000 IU', reminderTimes: ['08:00 AM'], status: 'taken', type: 'Supplement', instruction: 'After meal' },
-        { _id: '2', name: 'Amoxicillin', dosage: '500 mg', reminderTimes: ['02:00 PM'], status: 'pending', type: 'Antibiotic', instruction: 'Before meal' },
-      ]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
   useEffect(() => {
+    let mounted = true;
+    const fetchData = async () => {
+      const token = localStorage.getItem('token');
+
+      try {
+        // 1. Fetch User Profile
+        const userRes = await axios.get(`${API_BASE}/api/v1/auth/me`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (mounted && userRes.data.status === 'success') setUser(userRes.data.data);
+
+        // 2. Fetch Medicines
+        const medsRes = await axios.get(`${API_BASE}/api/v1/medicines`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (mounted && medsRes.data.status === 'success') setMedicines(medsRes.data.data);
+
+        // 3. Fetch Stats
+        const statsRes = await axios.get(`${API_BASE}/api/v1/analytics`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (mounted && statsRes.data.status === 'success') setStats(statsRes.data.data);
+
+        // 4. Fetch Prediction
+        const predictRes = await axios.post(`${API_BASE}/api/v1/analytics/predict`, {}, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (mounted && predictRes.data.status === 'success') setPrediction(predictRes.data.data.prediction);
+
+      } catch (err) {
+        if (mounted) {
+          console.error('Failed to fetch dashboard data:', err);
+          // Fallback to mock medicines if fetch fails
+          setMedicines([
+            { _id: '1', name: 'Vitamin D3', dosage: '2000 IU', reminderTimes: ['08:00 AM'], status: 'taken', type: 'Supplement', instruction: 'After meal' },
+            { _id: '2', name: 'Amoxicillin', dosage: '500 mg', reminderTimes: ['02:00 PM'], status: 'pending', type: 'Antibiotic', instruction: 'Before meal' },
+          ]);
+        }
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    };
+
     fetchData();
-  }, [fetchData]);
+    return () => { mounted = false; };
+  }, []);
 
   return (
     <div className="min-h-screen p-6">

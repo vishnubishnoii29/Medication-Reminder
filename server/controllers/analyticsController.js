@@ -4,7 +4,7 @@ const Reminder = require('../models/Reminder');
 const AdherenceLog = require('../models/AdherenceLog');
 const Medicine = require('../models/Medicine');
 
-exports.getDashboardStats = catchAsync(async (req, res, next) => {
+exports.getDashboardStats = catchAsync(async (req, res) => {
   // Aggregate basic stats
   const totalReminders = await Reminder.countDocuments({ user: req.user.id });
   const activeReminders = await Reminder.countDocuments({ user: req.user.id, status: 'active' });
@@ -131,7 +131,7 @@ exports.getDashboardStats = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAIPrediction = catchAsync(async (req, res, next) => {
+exports.getAIPrediction = catchAsync(async (req, res) => {
   // Calculate real past adherence rates for past 3 weeks
   const pastRates = [];
   for (let i = 1; i <= 3; i++) {

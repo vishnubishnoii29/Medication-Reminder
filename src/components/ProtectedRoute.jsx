@@ -1,4 +1,3 @@
-import React from 'react';
 import { Navigate } from 'react-router-dom';
 
 /**
@@ -15,15 +14,16 @@ const ProtectedRoute = ({ children, requireAdmin = false }) => {
   }
 
   // Check token expiry by parsing the JWT payload (base64)
+  let isExpired;
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
-    if (payload.exp * 1000 < Date.now()) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      return <Navigate to="/login" replace />;
-    }
+    // eslint-disable-next-line react-hooks/purity
+    isExpired = payload.exp * 1000 < Date.now();
   } catch {
-    // Malformed token
+    isExpired = true; // Malformed token
+  }
+
+  if (isExpired) {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
     return <Navigate to="/login" replace />;

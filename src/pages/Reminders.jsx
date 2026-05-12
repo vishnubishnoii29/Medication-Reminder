@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
-  Bell, Clock, Plus, Filter, MoreVertical, Edit2, Trash2, 
+  Bell, Clock, Plus, Filter, Edit2, Trash2, 
   X, AlertTriangle, Volume2, Mail, Smartphone
 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -12,7 +12,7 @@ import { API_BASE } from '../config/api';
 const Reminders = () => {
   const [reminders, setReminders] = useState([]);
   const [medicines, setMedicines] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
   const [editingReminder, setEditingReminder] = useState(null);
@@ -52,7 +52,6 @@ const Reminders = () => {
 
   // Fetch Reminders and Medicines
   const fetchData = useCallback(async () => {
-    setLoading(true);
     try {
       const [remindersRes, medicinesRes] = await Promise.all([
         axios.get(`${API_BASE}/api/v1/reminders`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -60,7 +59,7 @@ const Reminders = () => {
       ]);
       setReminders(remindersRes.data.data);
       setMedicines(medicinesRes.data.data);
-    } catch (err) {
+    } catch {
       setError('Failed to fetch data');
       // Fallback to mock data
       setReminders([
@@ -77,6 +76,7 @@ const Reminders = () => {
   }, [token]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchData();
   }, [fetchData]);
 
@@ -133,7 +133,7 @@ const Reminders = () => {
       toast.success('Reminder deleted successfully!');
       setDeleteConfirmOpen(false);
       fetchData();
-    } catch (err) {
+    } catch {
       toast.error('Failed to delete reminder');
     } finally {
       setLoading(false);
@@ -142,6 +142,7 @@ const Reminders = () => {
 
   const toggleStatus = async (reminder) => {
     try {
+      setLoading(true);
       const newStatus = reminder.status === 'active' ? 'inactive' : 'active';
       // Bug #5 fix: use PATCH for partial update (only changing status field)
       await axios.patch(`${API_BASE}/api/v1/reminders/${reminder._id}`, { status: newStatus }, {
@@ -149,7 +150,7 @@ const Reminders = () => {
       });
       toast.success(`Reminder ${newStatus === 'active' ? 'enabled' : 'disabled'}`);
       fetchData();
-    } catch (err) {
+    } catch {
       toast.error('Failed to update status');
     }
   };

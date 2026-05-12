@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Pill, Search, Plus, Filter, Edit2, Trash2, 
@@ -12,7 +12,7 @@ import { API_BASE } from '../config/api';
 
 const Medicines = () => {
   const [medicines, setMedicines] = useState([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('all');
@@ -21,19 +21,18 @@ const Medicines = () => {
   const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
   const [medicineToDelete, setMedicineToDelete] = useState(null);
 
-  const { register, handleSubmit, reset, setValue, watch } = useForm();
+  const { register, handleSubmit, reset, setValue } = useForm();
 
   const token = localStorage.getItem('token');
 
   // Fetch Medicines
   const fetchMedicines = useCallback(async () => {
-    setLoading(true);
     try {
       const res = await axios.get(`${API_BASE}/api/v1/medicines`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       setMedicines(res.data.data);
-    } catch (err) {
+    } catch {
       setError('Failed to fetch medicines');
       // Fallback to mock data for demo
       setMedicines([
@@ -46,6 +45,7 @@ const Medicines = () => {
   }, [token]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     fetchMedicines();
   }, [fetchMedicines]);
 
@@ -106,7 +106,7 @@ const Medicines = () => {
       toast.success('Medicine deleted successfully!');
       setDeleteConfirmOpen(false);
       fetchMedicines();
-    } catch (err) {
+    } catch {
       toast.error('Failed to delete medicine');
       setError('Failed to delete medicine');
     } finally {

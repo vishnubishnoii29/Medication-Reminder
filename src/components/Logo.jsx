@@ -1,4 +1,4 @@
-import React from 'react';
+
 
 /**
  * MediMind brand logo component — medicine pill theme.

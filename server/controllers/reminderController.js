@@ -2,7 +2,7 @@ const Reminder = require('../models/Reminder');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 
-exports.createReminder = catchAsync(async (req, res, next) => {
+exports.createReminder = catchAsync(async (req, res) => {
   req.body.user = req.user.id;
   
   const newReminder = await Reminder.create(req.body);
@@ -13,7 +13,7 @@ exports.createReminder = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.getAllReminders = catchAsync(async (req, res, next) => {
+exports.getAllReminders = catchAsync(async (req, res) => {
   const reminders = await Reminder.find({ user: req.user.id }).sort('time');
 
   res.status(200).json({

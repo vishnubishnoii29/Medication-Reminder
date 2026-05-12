@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import toast from 'react-hot-toast';
 import axios from 'axios';
 import { API_BASE } from '../config/api';
 import { Settings as SettingsIcon, User, Bell, Shield, Moon, Sun, 
-  Smartphone, Globe, Volume2, Database, Key, LogOut, ChevronRight
+  Smartphone, Globe, Volume2, Database, LogOut
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
@@ -22,11 +22,10 @@ const Settings = () => {
   });
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [loading, setLoading] = useState(false);
+
 
   useEffect(() => {
     const fetchUser = async () => {
-      setLoading(true);
       const token = localStorage.getItem('token');
       try {
         const res = await axios.get(`${API_BASE}/api/v1/auth/me`, {
@@ -49,8 +48,6 @@ const Settings = () => {
       } catch (err) {
         console.error('Failed to fetch user in settings:', err);
         toast.error('Failed to load settings');
-      } finally {
-        setLoading(false);
       }
     };
     fetchUser();
@@ -114,7 +111,7 @@ const Settings = () => {
                   await axios.post(`${API_BASE}/api/v1/auth/logout`, {}, {
                     headers: { Authorization: `Bearer ${token}` }
                   });
-                } catch (_) { /* proceed even if server call fails */ }
+                } catch { /* proceed even if server call fails */ }
                 localStorage.removeItem('token');
                 localStorage.removeItem('user');
                 navigate('/login');
@@ -193,7 +190,7 @@ const Settings = () => {
                           toast.success('Settings updated successfully!');
                           localStorage.setItem('user', JSON.stringify(res.data.data));
                         }
-                      } catch (err) {
+                      } catch {
                         toast.error('Failed to update settings');
                       }
                     }} 

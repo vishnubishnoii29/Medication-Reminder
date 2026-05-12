@@ -3,7 +3,7 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const aiService = require('../services/aiService');
 
-exports.getChatSessions = catchAsync(async (req, res, next) => {
+exports.getChatSessions = catchAsync(async (req, res) => {
   const sessions = await ChatSession.find({ user: req.user.id })
     .select('-messages')
     .sort('-updatedAt');
@@ -27,7 +27,7 @@ exports.getChatSession = catchAsync(async (req, res, next) => {
   });
 });
 
-exports.createChatSession = catchAsync(async (req, res, next) => {
+exports.createChatSession = catchAsync(async (req, res) => {
   const newSession = await ChatSession.create({
     user: req.user.id,
     title: req.body.title || 'New Conversation'

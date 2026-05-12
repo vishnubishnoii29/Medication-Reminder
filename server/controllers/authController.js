@@ -1,4 +1,5 @@
 const jwt = require('jsonwebtoken');
+// eslint-disable-next-line no-redeclare
 const crypto = require('crypto');
 const User = require('../models/User');
 const catchAsync = require('../utils/catchAsync');
@@ -31,7 +32,7 @@ const createSendToken = (user, statusCode, res) => {
   });
 };
 
-exports.register = catchAsync(async (req, res, next) => {
+exports.register = catchAsync(async (req, res) => {
   const newUser = await User.create({
     name: req.body.name,
     email: req.body.email,
@@ -83,7 +84,7 @@ exports.protect = catchAsync(async (req, res, next) => {
   let decoded;
   try {
     decoded = jwt.verify(token, process.env.JWT_SECRET || 'super-secret-key-that-should-be-long');
-  } catch (err) {
+  } catch {
     return next(new AppError('Invalid or expired token. Please log in again.', 401));
   }
 
@@ -109,7 +110,7 @@ exports.restrictTo = (...roles) => {
   };
 };
 
-exports.getMe = (req, res, next) => {
+exports.getMe = (req, res) => {
   res.status(200).json({
     status: 'success',
     data: req.user

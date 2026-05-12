@@ -1,8 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { 
-  Pill, Activity, Clock, MessageSquare, BarChart, 
-  Smartphone, Shield, Zap, CheckCircle, Menu, X, 
+  Pill, Clock, BarChart, 
+  Smartphone, CheckCircle, Menu, X, 
   Bell, ChevronRight, Heart, Target, TrendingUp, Brain
 } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -422,7 +422,7 @@ const Footer = () => {
 };
 
 export default function Landing() {
-  React.useEffect(() => {
+  useEffect(() => {
     // Prevent browser from restoring scroll position on refresh
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual';

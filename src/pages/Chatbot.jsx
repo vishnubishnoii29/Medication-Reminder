@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   MessageSquare, Send, Mic, Paperclip, MoreVertical, 
@@ -26,9 +26,9 @@ const Chatbot = () => {
   const typingTimerRef = useRef(null);
   const messagesEndRef = useRef(null);
   const token = localStorage.getItem('token');
-  const currentUser = JSON.parse(localStorage.getItem('user') || '{}');
-  const userInitial = currentUser.name ? currentUser.name[0].toUpperCase() : 'U';
-  const userName = currentUser.name || 'User';
+
+
+
 
   // Connect to Socket.io only for real-time reminder alerts (not chat)
   useEffect(() => {
@@ -56,42 +56,45 @@ const Chatbot = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, typing]);
 
-  // Bug #1 fix: fetch or create a chat session on mount
-  const initSession = useCallback(async () => {
-    try {
-      const sessRes = await axios.get(`${API_BASE}/api/v1/chat`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      const existingSessions = sessRes.data.data;
-      setSessions(existingSessions);
-
-      if (existingSessions.length > 0) {
-        // Load the most recent session's messages
-        const latest = existingSessions[0];
-        const msgRes = await axios.get(`${API_BASE}/api/v1/chat/${latest._id}`, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        const loadedMessages = msgRes.data.data.messages || [];
-        if (loadedMessages.length > 0) {
-          setMessages(loadedMessages.map(m => ({ ...m, timestamp: new Date(m.timestamp || Date.now()) })));
-        }
-        setSessionId(latest._id);
-      } else {
-        // Create a new session
-        const newSess = await axios.post(`${API_BASE}/api/v1/chat`, { title: 'New Conversation' }, {
-          headers: { Authorization: `Bearer ${token}` }
-        });
-        setSessionId(newSess.data.data._id);
-        setSessions([newSess.data.data]);
-      }
-    } catch (err) {
-      console.error('Failed to init chat session:', err);
-    }
-  }, [token]);
-
   useEffect(() => {
+    let mounted = true;
+    const initSession = async () => {
+      try {
+        const sessRes = await axios.get(`${API_BASE}/api/v1/chat`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        const existingSessions = sessRes.data.data;
+        if (mounted) setSessions(existingSessions);
+  
+        if (existingSessions.length > 0) {
+          // Load the most recent session's messages
+          const latest = existingSessions[0];
+          const msgRes = await axios.get(`${API_BASE}/api/v1/chat/${latest._id}`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          const loadedMessages = msgRes.data.data.messages || [];
+          if (mounted && loadedMessages.length > 0) {
+            setMessages(loadedMessages.map(m => ({ ...m, timestamp: new Date(m.timestamp || Date.now()) })));
+          }
+          if (mounted) setSessionId(latest._id);
+        } else {
+          // Create a new session
+          const newSess = await axios.post(`${API_BASE}/api/v1/chat`, { title: 'New Conversation' }, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+          if (mounted) {
+            setSessionId(newSess.data.data._id);
+            setSessions([newSess.data.data]);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to init chat session:', err);
+      }
+    };
+  
     initSession();
-  }, [initSession]);
+    return () => { mounted = false; };
+  }, [token]);
 
   const startNewChat = async () => {
     try {
@@ -145,7 +148,7 @@ const Chatbot = () => {
 
       const aiMsg = res.data.data;
       setMessages(prev => [...prev, { ...aiMsg, timestamp: new Date(aiMsg.timestamp || Date.now()) }]);
-    } catch (err) {
+    } catch {
       clearTimeout(typingTimerRef.current);
       setTyping(false);
       setMessages(prev => [...prev, {
@@ -281,7 +284,11 @@ const Chatbot = () => {
                       ? 'bg-gradient-premium text-white shadow-lg shadow-primary/10 rounded-tr-none' 
                       : 'glass dark:bg-slate-900/50 dark:border-slate-800 p-4 rounded-2xl border-white/60 shadow-sm rounded-tl-none'
                   }`}>
-                    <p className="text-sm font-medium leading-relaxed">{msg.text}</p>
+                    <p className="text-sm font-medium leading-relaxed whitespace-pre-wrap">
+                      {msg.text.split('**').map((part, index) => (
+                        index % 2 === 1 ? <strong key={index}>{part}</strong> : part
+                      ))}
+                    </p>
                   </div>
                   <p className={`text-xs text-slate-400 dark:text-slate-500 font-medium mt-1.5 ${msg.sender === 'user' ? 'text-right' : 'text-left'}`}>
                     {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -319,10 +326,10 @@ const Chatbot = () => {
         {/* Quick Suggestions */}
         <div className="px-6 py-2 flex gap-2 overflow-x-auto relative z-10 no-scrollbar">
           {[
-            "What medicines do I take today?",
-            "Show my adherence report",
-            "Next reminder time?",
-            "How to take Amoxicillin?"
+            "What are the common side effects of Amoxicillin?",
+            "Can I take supplements with my prescription meds?",
+            "What are some tips to remember my medications?",
+            "What should I do if I miss a dose?"
           ].map((suggestion, idx) => (
             <button 
               key={idx}

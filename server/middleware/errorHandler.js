@@ -50,6 +50,7 @@ const sendErrorProd = (err, res) => {
   }
 };
 
+// eslint-disable-next-line no-unused-vars
 module.exports = (err, req, res, next) => {
   console.error('ERROR trapped in handler:', err);
   err.statusCode = err.statusCode || 500;
