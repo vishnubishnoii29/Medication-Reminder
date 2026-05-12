@@ -1,6 +1,6 @@
 # 🧠 MediMind.ai - AI-Powered Medication Reminder & Health Assistant
 
-![MediMind Banner](https://images.unsplash.com/photo-1576091160399-112ba8d25d1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1200&q=80)
+![MediMind Banner]
 
 > A production-level, intelligent healthcare SaaS platform built to solve medication non-adherence using advanced Machine Learning, real-time reminders, and an interactive AI Chatbot.
 
